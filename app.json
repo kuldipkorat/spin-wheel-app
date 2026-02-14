@@ -1,0 +1,22 @@
+{
+  "expo": {
+    "name": "Spin & Win",
+    "slug": "spin-and-win",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#0D1B2A"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.spinandwin.app"
+    },
+    "android": {
+      "backgroundColor": "#0D1B2A",
+      "package": "com.spinandwin.app"
+    },
+    "plugins": []
+  }
+}
