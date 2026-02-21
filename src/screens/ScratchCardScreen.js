@@ -5,10 +5,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Alert,
   PanResponder,
 } from 'react-native';
 import { useGame } from '../context/GameContext';
+import { showRewardedAd } from '../services/ads';
+import RewardModal from '../components/RewardModal';
 import { COLORS } from '../constants/theme';
 
 const CARD_WIDTH = Math.min(Dimensions.get('window').width - 48, 320);
@@ -40,10 +41,11 @@ function getCellsInRadius(cx, cy, r, cols, rows, cellW, cellH) {
 }
 
 export default function ScratchCardScreen({ navigation }) {
-  const { addCoins } = useGame();
+  const { addCoins, addSpins } = useGame();
   const [scratched, setScratched] = useState(false);
   const [prize, setPrize] = useState(0);
   const [scratchedCells, setScratchedCells] = useState(new Set());
+  const [showResultModal, setShowResultModal] = useState(false);
   const hasRevealed = useRef(false);
 
   const getRandomPrize = () =>
@@ -54,7 +56,21 @@ export default function ScratchCardScreen({ navigation }) {
     setPrize(getRandomPrize());
     setScratchedCells(new Set());
     hasRevealed.current = false;
+    setShowResultModal(false);
   }, []);
+
+  const handlePlayAgain = useCallback(() => {
+    setShowResultModal(false);
+    setScratched(false);
+    setPrize(getRandomPrize());
+    setScratchedCells(new Set());
+    hasRevealed.current = false;
+  }, []);
+
+  const handleWatchAd = useCallback(async () => {
+    const granted = await showRewardedAd(() => addSpins(5));
+    if (granted) setShowResultModal(false);
+  }, [addSpins]);
 
   useEffect(() => {
     setPrize(getRandomPrize());
@@ -69,7 +85,7 @@ export default function ScratchCardScreen({ navigation }) {
         hasRevealed.current = true;
         setScratched(true);
         addCoins(prize);
-        Alert.alert('Congratulations!', `You won ${prize} coins!`);
+        setShowResultModal(true);
       }
     },
     [prize, addCoins]
@@ -154,15 +170,18 @@ export default function ScratchCardScreen({ navigation }) {
         </View>
       </View>
 
-      {scratched && (
-        <TouchableOpacity style={styles.playAgainButton} onPress={resetCard}>
-          <Text style={styles.playAgainText}>Play Again</Text>
-        </TouchableOpacity>
-      )}
-
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backButtonText}>Back to Home</Text>
       </TouchableOpacity>
+
+      <RewardModal
+        visible={showResultModal}
+        coinsWon={prize}
+        playAgainLabel="Scratch Again"
+        onPlayAgain={handlePlayAgain}
+        onWatchAd={handleWatchAd}
+        onClose={() => setShowResultModal(false)}
+      />
     </View>
   );
 }

@@ -15,6 +15,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Path, G } from 'react-native-svg';
 import { useGame } from '../context/GameContext';
+import { showRewardedAd } from '../services/ads';
+import RewardModal from '../components/RewardModal';
 import { COLORS } from '../constants/theme';
 
 const SEGMENTS = [
@@ -48,9 +50,16 @@ function describeArc(cx, cy, r, startAngle, endAngle) {
 }
 
 export default function SpinWheelScreen({ navigation }) {
-  const { spinCount, useSpin, addCoins } = useGame();
+  const { spinCount, useSpin, addCoins, addSpins } = useGame();
   const [spinning, setSpinning] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [lastWonCoins, setLastWonCoins] = useState(0);
   const rotation = useSharedValue(0);
+
+  const openResultModal = useCallback((coins) => {
+    setLastWonCoins(coins);
+    setShowResultModal(true);
+  }, []);
 
   const spin = useCallback(() => {
     if (spinning || spinCount <= 0) {
@@ -74,15 +83,16 @@ export default function SpinWheelScreen({ navigation }) {
         if (finished) {
           runOnJS(addCoins)(segment.value);
           runOnJS(setSpinning)(false);
-          if (segment.value > 0) {
-            runOnJS(Alert.alert)('Winner!', `You won ${segment.value} coins!`);
-          } else {
-            runOnJS(Alert.alert)('Try Again', 'Better luck next time!');
-          }
+          runOnJS(openResultModal)(segment.value);
         }
       }
     );
-  }, [spinCount, spinning, useSpin, addCoins]);
+  }, [spinCount, spinning, useSpin, addCoins, openResultModal]);
+
+  const handleWatchAd = useCallback(async () => {
+    const granted = await showRewardedAd(() => addSpins(5));
+    if (granted) setShowResultModal(false);
+  }, [addSpins]);
 
   const wheelStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${rotation.value}deg` }],
@@ -95,6 +105,7 @@ export default function SpinWheelScreen({ navigation }) {
   const cy = size / 2;
 
   return (
+    <>
     <View style={styles.container}>
       <Text style={styles.title}>Spin the Wheel</Text>
       <Text style={styles.spinsLeft}>Spins: {spinCount}</Text>
@@ -165,6 +176,16 @@ export default function SpinWheelScreen({ navigation }) {
         <Text style={styles.backButtonText}>Back to Home</Text>
       </TouchableOpacity>
     </View>
+
+    <RewardModal
+      visible={showResultModal}
+      coinsWon={lastWonCoins}
+      playAgainLabel="Spin Again"
+      onPlayAgain={() => setShowResultModal(false)}
+      onWatchAd={handleWatchAd}
+      onClose={() => setShowResultModal(false)}
+    />
+    </>
   );
 }
 
