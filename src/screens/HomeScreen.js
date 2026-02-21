@@ -1,34 +1,53 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Share,
-  Alert,
   Dimensions,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGame } from '../context/GameContext';
 import { showRewardedAd } from '../services/ads';
+import GetSpinsModal from '../components/GetSpinsModal';
 import { COLORS } from '../constants/theme';
 
 const REFERRAL_LINK = 'https://spinandwin.app/ref?code=SHARE123';
+const { width } = Dimensions.get('window');
+const BUTTON_GAP = 16;
+const PADDING_H = 20;
+const buttonSize = (width - PADDING_H * 2 - BUTTON_GAP) / 2 - BUTTON_GAP / 2;
 
 export default function HomeScreen({ navigation }) {
   const { coinCount, spinCount, addSpins } = useGame();
+  const [getSpinsVisible, setGetSpinsVisible] = useState(false);
+  const [getSpinsStatus, setGetSpinsStatus] = useState('idle'); // idle | have_spins | watch_ad | loading | success | error
 
-  const handleGetSpins = async () => {
+  const handleGetSpins = useCallback(() => {
     if (spinCount > 0) {
-      Alert.alert('You have spins!', `You have ${spinCount} spin(s) available. Use them first!`);
+      setGetSpinsStatus('have_spins');
+      setGetSpinsVisible(true);
       return;
     }
+    setGetSpinsStatus('watch_ad');
+    setGetSpinsVisible(true);
+  }, [spinCount]);
+
+  const handleWatchAdForSpins = useCallback(async () => {
+    setGetSpinsStatus('loading');
     const granted = await showRewardedAd(() => addSpins(5));
     if (granted) {
-      Alert.alert('Success!', 'You earned 5 free spins!');
+      setGetSpinsStatus('success');
     } else {
-      Alert.alert('Ad Unavailable', 'Please try again later to earn spins.');
+      setGetSpinsStatus('error');
     }
-  };
+  }, [addSpins]);
+
+  const handleCloseGetSpins = useCallback(() => {
+    setGetSpinsVisible(false);
+    setGetSpinsStatus('idle');
+  }, []);
 
   const handleShare = async () => {
     try {
@@ -43,57 +62,32 @@ export default function HomeScreen({ navigation }) {
   };
 
   const buttons = [
-    {
-      id: 'spin',
-      title: 'Spin Wheel',
-      emoji: '🎡',
-      onPress: () => navigation.navigate('SpinWheel'),
-      color: COLORS.gold,
-    },
-    {
-      id: 'withdraw',
-      title: 'Withdrawal',
-      emoji: '💳',
-      onPress: () => navigation.navigate('Withdrawal'),
-      color: COLORS.primary,
-    },
-    {
-      id: 'spins',
-      title: 'Get Spins',
-      emoji: '📺',
-      onPress: handleGetSpins,
-      color: '#9C27B0',
-    },
-    {
-      id: 'scratch',
-      title: 'Scratch Card',
-      emoji: '🎫',
-      onPress: () => navigation.navigate('ScratchCard'),
-      color: COLORS.goldDark,
-    },
-    {
-      id: 'share',
-      title: 'Share',
-      emoji: '📤',
-      onPress: handleShare,
-      color: COLORS.success,
-    },
+    { id: 'spin', title: 'Spin Wheel', emoji: '🎡', onPress: () => navigation.navigate('SpinWheel'), color: COLORS.gold },
+    { id: 'withdraw', title: 'Withdrawal', emoji: '💳', onPress: () => navigation.navigate('Withdrawal'), color: COLORS.primary },
+    { id: 'spins', title: 'Get Spins', emoji: '📺', onPress: handleGetSpins, color: '#9C27B0' },
+    { id: 'scratch', title: 'Scratch Card', emoji: '🎫', onPress: () => navigation.navigate('ScratchCard'), color: COLORS.goldDark },
+    { id: 'share', title: 'Share', emoji: '📤', onPress: handleShare, color: COLORS.success },
   ];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <View style={styles.headerBar}>
+        <Text style={styles.headerTitle}>Spin & Win</Text>
+        <Text style={styles.headerSubtitle}>Win coins, get rewards</Text>
+      </View>
+
+      <View style={styles.statsRow}>
         <View style={styles.statCard}>
           <Text style={styles.statEmoji}>🪙</Text>
-          <View>
+          <View style={styles.statTextWrap}>
             <Text style={styles.statLabel}>Total Coins</Text>
             <Text style={styles.statValue}>{coinCount.toLocaleString()}</Text>
           </View>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statEmoji}>🎡</Text>
-          <View>
-            <Text style={styles.statLabel}>Available Spins</Text>
+          <View style={styles.statTextWrap}>
+            <Text style={styles.statLabel}>Spins</Text>
             <Text style={styles.statValue}>{spinCount}</Text>
           </View>
         </View>
@@ -112,24 +106,45 @@ export default function HomeScreen({ navigation }) {
           </TouchableOpacity>
         ))}
       </View>
-    </View>
+
+      <GetSpinsModal
+        visible={getSpinsVisible}
+        spinCount={spinCount}
+        status={getSpinsStatus}
+        onWatchAd={handleWatchAdForSpins}
+        onClose={handleCloseGetSpins}
+      />
+    </SafeAreaView>
   );
 }
-
-const { width } = Dimensions.get('window');
-const buttonSize = (width - 48) / 2 - 8;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
-    padding: 16,
+    paddingHorizontal: PADDING_H,
+    paddingBottom: 24,
   },
-  header: {
+  headerBar: {
+    paddingTop: 8,
+    paddingBottom: 20,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+    letterSpacing: 1,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: COLORS.textSecondary,
+    marginTop: 4,
+  },
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
     gap: 12,
+    marginBottom: 24,
   },
   statCard: {
     flex: 1,
@@ -137,7 +152,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: COLORS.backgroundLight,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 2,
     borderColor: COLORS.gold,
     gap: 12,
@@ -145,12 +160,16 @@ const styles = StyleSheet.create({
   statEmoji: {
     fontSize: 32,
   },
+  statTextWrap: {
+    flex: 1,
+  },
   statLabel: {
     fontSize: 12,
     color: COLORS.textSecondary,
+    marginBottom: 2,
   },
   statValue: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: COLORS.gold,
   },
@@ -158,17 +177,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    gap: 16,
+    gap: BUTTON_GAP,
   },
   button: {
     width: buttonSize,
-    height: buttonSize,
+    minHeight: 100,
     backgroundColor: COLORS.backgroundLight,
     borderRadius: 16,
     borderWidth: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 8,
+    padding: 12,
   },
   buttonEmoji: {
     fontSize: 40,

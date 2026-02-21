@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -45,7 +46,7 @@ export default function SplashScreen({ onFinish }) {
   }));
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom', 'left', 'right']}>
       <Animated.View style={[styles.logoContainer, logoStyle]}>
         <View style={styles.wheelPlaceholder}>
           <Text style={styles.wheelEmoji}>🎡</Text>
@@ -55,7 +56,7 @@ export default function SplashScreen({ onFinish }) {
       <Animated.Text style={[styles.subtitle, textStyle]}>
         Win Coins • Win Prizes
       </Animated.Text>
-    </View>
+    </SafeAreaView>
   );
 }
 

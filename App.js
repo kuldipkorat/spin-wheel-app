@@ -1,9 +1,10 @@
 import 'react-native-reanimated';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GameProvider, useGame } from './src/context/GameContext';
 import SplashScreen from './src/screens/SplashScreen';
 import HomeScreen from './src/screens/HomeScreen';
@@ -30,7 +31,9 @@ function RootNavigator() {
       screenOptions={{
         headerStyle: { backgroundColor: '#0D1B2A' },
         headerTintColor: '#FFD700',
-        headerTitleStyle: { fontWeight: 'bold' },
+        headerTitleStyle: { fontWeight: 'bold', fontSize: 18 },
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: '#0D1B2A' },
       }}
     >
       <Stack.Screen
@@ -59,13 +62,15 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <GameProvider>
-        <NavigationContainer>
-          <RootNavigator />
-          <StatusBar style="light" />
-        </NavigationContainer>
-      </GameProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <GameProvider>
+          <NavigationContainer>
+            <RootNavigator />
+            <StatusBar style="light" />
+          </NavigationContainer>
+        </GameProvider>
+      </GestureHandlerRootView>
+    </SafeAreaProvider>
   );
 }

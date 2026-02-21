@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGame } from '../context/GameContext';
 import { COLORS } from '../constants/theme';
 
@@ -64,12 +65,13 @@ export default function WithdrawalScreen({ navigation }) {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>Withdrawal</Text>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
+      <KeyboardAvoidingView
+        style={styles.keyboardWrap}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+          <Text style={styles.title}>Withdrawal</Text>
 
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Available Balance</Text>
@@ -115,15 +117,16 @@ export default function WithdrawalScreen({ navigation }) {
           </View>
         )}
 
-        <TouchableOpacity style={styles.withdrawButton} onPress={handleWithdraw}>
+        <TouchableOpacity style={styles.withdrawButton} onPress={handleWithdraw} activeOpacity={0.85}>
           <Text style={styles.withdrawButtonText}>Request Withdrawal</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
           <Text style={styles.backButtonText}>Back to Home</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -132,12 +135,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  keyboardWrap: {
+    flex: 1,
+  },
   scrollContent: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 40,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: COLORS.gold,
     marginBottom: 20,
@@ -238,6 +245,8 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderRadius: 12,
     marginBottom: 12,
+    minHeight: 52,
+    justifyContent: 'center',
   },
   withdrawButtonText: {
     fontSize: 18,
@@ -246,8 +255,11 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   backButton: {
-    padding: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    minHeight: 48,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   backButtonText: {
     fontSize: 16,
