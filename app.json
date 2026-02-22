@@ -8,7 +8,9 @@
     "splash": {
       "backgroundColor": "#0D1B2A"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.spinandwin.app"
@@ -17,6 +19,19 @@
       "backgroundColor": "#0D1B2A",
       "package": "com.spinandwin.app"
     },
-    "plugins": []
+    "plugins": [
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-6310355604963532~3855259459",
+          "iosAppId": "ca-app-pub-6310355604963532~3855259459"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "46dda90e-40e5-4d90-99fa-3e956229bf87"
+      }
+    }
   }
 }

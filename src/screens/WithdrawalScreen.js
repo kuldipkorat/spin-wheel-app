@@ -13,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGame } from '../context/GameContext';
 import { COLORS } from '../constants/theme';
+import { BannerAdView } from '../services/ads';
 
 const PAYMENT_METHODS = [
   { id: 'paypal', label: 'PayPal', icon: '💳', fields: ['email'] },
@@ -65,67 +66,89 @@ export default function WithdrawalScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <View style={styles.header}>
+        <TouchableOpacity style={styles.backButtonTop} onPress={() => navigation.goBack()}>
+          <Text style={styles.backButtonTextTop}>← Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Withdrawal</Text>
+        <View style={{ width: 60 }} />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardWrap}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
-          <Text style={styles.title}>Withdrawal</Text>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.balanceCard}>
+            <Text style={styles.balanceLabel}>Available Balance</Text>
+            <Text style={styles.coinBalance}>{coinCount.toLocaleString()} Coins</Text>
+            <Text style={styles.currencyBalance}>≈ ${currencyAmount}</Text>
+            <Text style={styles.rateNote}>$1 = 1000 Coins</Text>
+          </View>
 
-        <View style={styles.balanceCard}>
-          <Text style={styles.balanceLabel}>Available Balance</Text>
-          <Text style={styles.coinBalance}>{coinCount.toLocaleString()} Coins</Text>
-          <Text style={styles.currencyBalance}>≈ ${currencyAmount}</Text>
-          <Text style={styles.rateNote}>$1 = 1000 Coins</Text>
-        </View>
-
-        <Text style={styles.sectionTitle}>Payment Method</Text>
-        <View style={styles.methodList}>
-          {PAYMENT_METHODS.map((method) => (
-            <TouchableOpacity
-              key={method.id}
-              style={[
-                styles.methodOption,
-                selectedMethod === method.id && styles.methodOptionSelected,
-              ]}
-              onPress={() => setSelectedMethod(method.id)}
-            >
-              <Text style={styles.methodIcon}>{method.icon}</Text>
-              <Text style={styles.methodLabel}>{method.label}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {selectedMethod && (
-          <View style={styles.formSection}>
-            <Text style={styles.formTitle}>Enter Details</Text>
-            {PAYMENT_METHODS.find((m) => m.id === selectedMethod).fields.map((field) => (
-              <View key={field} style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>{FIELD_LABELS[field]}</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData[field] || ''}
-                  onChangeText={(v) => handleFieldChange(field, v)}
-                  placeholder={FIELD_LABELS[field]}
-                  placeholderTextColor={COLORS.textSecondary}
-                  keyboardType={field === 'email' ? 'email-address' : 'default'}
-                  autoCapitalize="none"
-                />
-              </View>
+          <Text style={styles.sectionTitle}>Payment Method</Text>
+          <View style={styles.methodList}>
+            {PAYMENT_METHODS.map((method) => (
+              <TouchableOpacity
+                key={method.id}
+                style={[
+                  styles.methodOption,
+                  selectedMethod === method.id && styles.methodOptionSelected,
+                ]}
+                onPress={() => setSelectedMethod(method.id)}
+              >
+                <Text style={styles.methodIcon}>{method.icon}</Text>
+                <Text style={styles.methodLabel}>{method.label}</Text>
+              </TouchableOpacity>
             ))}
           </View>
-        )}
 
-        <TouchableOpacity style={styles.withdrawButton} onPress={handleWithdraw} activeOpacity={0.85}>
-          <Text style={styles.withdrawButtonText}>Request Withdrawal</Text>
-        </TouchableOpacity>
+          {selectedMethod && (
+            <View style={styles.formSection}>
+              <Text style={styles.formTitle}>Enter Details</Text>
+              {PAYMENT_METHODS.find((m) => m.id === selectedMethod).fields.map((field) => (
+                <View key={field} style={styles.inputGroup}>
+                  <Text style={styles.inputLabel}>{FIELD_LABELS[field]}</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData[field] || ''}
+                    onChangeText={(v) => handleFieldChange(field, v)}
+                    placeholder={FIELD_LABELS[field]}
+                    placeholderTextColor={COLORS.textSecondary}
+                    keyboardType={field === 'email' ? 'email-address' : 'default'}
+                    autoCapitalize="none"
+                  />
+                </View>
+              ))}
+            </View>
+          )}
 
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()} activeOpacity={0.8}>
+          <TouchableOpacity
+            style={styles.withdrawButton}
+            onPress={handleWithdraw}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.withdrawButtonText}>Request Withdrawal</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.8}
+        >
           <Text style={styles.backButtonText}>Back to Home</Text>
         </TouchableOpacity>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+
+      <View style={styles.bannerWrapper}>
+        <BannerAdView />
+      </View>
     </SafeAreaView>
   );
 }
@@ -135,20 +158,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    paddingHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 10,
+  },
+  backButtonTop: {
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 8,
+  },
+  backButtonTextTop: {
+    color: COLORS.gold,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: COLORS.gold,
+  },
   keyboardWrap: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 40,
-  },
-  title: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: COLORS.gold,
-    marginBottom: 20,
-    textAlign: 'center',
+    paddingTop: 10,
+    paddingBottom: 20,
   },
   balanceCard: {
     backgroundColor: COLORS.backgroundLight,
@@ -264,5 +305,11 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 16,
     color: COLORS.textSecondary,
+  },
+  bannerWrapper: {
+    marginTop: 'auto',
+    alignItems: 'center',
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 0 : 10,
   },
 });

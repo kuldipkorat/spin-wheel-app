@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useGame } from '../context/GameContext';
-import { showRewardedAd } from '../services/ads';
+import { showRewardedAd, preloadRewardedAd, BannerAdView } from '../services/ads';
 import GetSpinsModal from '../components/GetSpinsModal';
 import { COLORS } from '../constants/theme';
+import AnimatedNumber from '../components/AnimatedNumber';
 
 const REFERRAL_LINK = 'https://spinandwin.app/ref?code=SHARE123';
 const { width } = Dimensions.get('window');
@@ -23,6 +24,10 @@ export default function HomeScreen({ navigation }) {
   const { coinCount, spinCount, addSpins } = useGame();
   const [getSpinsVisible, setGetSpinsVisible] = useState(false);
   const [getSpinsStatus, setGetSpinsStatus] = useState('idle'); // idle | have_spins | watch_ad | loading | success | error
+
+  React.useEffect(() => {
+    preloadRewardedAd();
+  }, []);
 
   const handleGetSpins = useCallback(() => {
     if (spinCount > 0) {
@@ -81,7 +86,7 @@ export default function HomeScreen({ navigation }) {
           <Text style={styles.statEmoji}>🪙</Text>
           <View style={styles.statTextWrap}>
             <Text style={styles.statLabel}>Total Coins</Text>
-            <Text style={styles.statValue}>{coinCount.toLocaleString()}</Text>
+            <AnimatedNumber value={coinCount} style={styles.statValue} />
           </View>
         </View>
         <View style={styles.statCard}>
@@ -114,6 +119,10 @@ export default function HomeScreen({ navigation }) {
         onWatchAd={handleWatchAdForSpins}
         onClose={handleCloseGetSpins}
       />
+
+      <View style={styles.bannerWrapper}>
+        <BannerAdView />
+      </View>
     </SafeAreaView>
   );
 }
@@ -126,8 +135,8 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
   },
   headerBar: {
-    paddingTop: 8,
-    paddingBottom: 20,
+    paddingTop: 24,
+    paddingBottom: 24,
     alignItems: 'center',
   },
   headerTitle: {
@@ -144,7 +153,8 @@ const styles = StyleSheet.create({
   statsRow: {
     flexDirection: 'row',
     gap: 12,
-    marginBottom: 24,
+    marginTop: 8,
+    marginBottom: 32,
   },
   statCard: {
     flex: 1,
@@ -178,6 +188,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     gap: BUTTON_GAP,
+    marginTop: 8,
   },
   button: {
     width: buttonSize,
@@ -198,5 +209,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.text,
     textAlign: 'center',
+  },
+  bannerWrapper: {
+    marginTop: 'auto',
+    paddingTop: 20,
+    alignItems: 'center',
   },
 });

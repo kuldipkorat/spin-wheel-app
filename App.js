@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GameProvider, useGame } from './src/context/GameContext';
+import { initializeAds } from './src/services/ads';
 import SplashScreen from './src/screens/SplashScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import SpinWheelScreen from './src/screens/SpinWheelScreen';
@@ -44,23 +45,27 @@ function RootNavigator() {
       <Stack.Screen
         name="SpinWheel"
         component={SpinWheelScreen}
-        options={{ title: 'Spin Wheel' }}
+        options={{ title: 'Spin Wheel', headerShown: false }}
       />
       <Stack.Screen
         name="ScratchCard"
         component={ScratchCardScreen}
-        options={{ title: 'Scratch Card' }}
+        options={{ title: 'Scratch Card', headerShown: false }}
       />
       <Stack.Screen
         name="Withdrawal"
         component={WithdrawalScreen}
-        options={{ title: 'Withdrawal' }}
+        options={{ title: 'Withdrawal', headerShown: false }}
       />
     </Stack.Navigator>
   );
 }
 
 export default function App() {
+  React.useEffect(() => {
+    initializeAds();
+  }, []);
+
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
