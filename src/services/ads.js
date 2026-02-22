@@ -37,7 +37,7 @@ const REWARDED_AD_UNIT_ID = (__DEV__ || FORCE_TEST_ADS)
 
 const BANNER_AD_UNIT_ID = (__DEV__ || FORCE_TEST_ADS)
   ? 'ca-app-pub-3940256099942544/6300978111' // Google Test ID
-  : 'ca-app-pub-3940256099942544/6300978111'; // Using provided test ID for now
+  : 'ca-app-pub-6310355604963532/1562771054'; // Your Production ID
 
 let rewardedAd = null;
 let isRewardedAdLoading = false;
